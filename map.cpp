@@ -18,27 +18,6 @@ namespace
 
 	// 入出力ファイル名
 	const char* const kFileName = "map.bin";
-
-	// マップデータ
-	constexpr int kMapData[kBgNumY][kBgNumX] =
-	{
-		{0,1,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	};
-
 }
 
 
@@ -47,8 +26,9 @@ Map::Map() :
 	m_graphWidth(0),
 	m_graphHeight(0),
 	m_cursorNo(0),
-	m_mapData(kBgNumX * kBgNumY, 0)
-
+	m_mapData(kBgNumX * kBgNumY, 0),
+	m_scrollX(),
+	m_scrollY()
 {
 }
 
@@ -96,40 +76,73 @@ void Map::updata()
 		readData();
 	}
 
+	//if (Pad::isPress(PAD_INPUT_UP))
+	//{
+	//	if ((m_cursorNo / kBgNumX) > 0)
+	//	{
+	//		m_cursorNo -= kBgNumX;
+	//	}
+	//}
+	//if (Pad::isPress(PAD_INPUT_DOWN))
+	//{
+	//	if ((m_cursorNo / kBgNumX) < (kBgNumY -1))
+	//	{
+	//		m_cursorNo += kBgNumX;
+	//	}
+	//}
+	//if (Pad::isPress(PAD_INPUT_LEFT))
+	//{
+	//	if (indexX > 0)
+	//	{
+	//		m_cursorNo--;
+	//	}
+	//}
+	//if (Pad::isPress(PAD_INPUT_RIGHT))
+	//{
+	//	if (indexY < (kBgNumX - 1))
+	//	{
+	//		m_cursorNo++;
+	//	}
+	//}
+
 	if (Pad::isPress(PAD_INPUT_UP))
 	{
-		if ((m_cursorNo / kBgNumX) > 0)
-		{
-			m_cursorNo -= kBgNumX;
-		}
+		m_scrollY++;
 	}
 	if (Pad::isPress(PAD_INPUT_DOWN))
 	{
-		if ((m_cursorNo / kBgNumX) < (kBgNumY -1))
-		{
-			m_cursorNo += kBgNumX;
-		}
+		m_scrollY--;
 	}
 	if (Pad::isPress(PAD_INPUT_LEFT))
 	{
-		if (indexX > 0)
-		{
-			m_cursorNo--;
-		}
+		m_scrollX++;
 	}
 	if (Pad::isPress(PAD_INPUT_RIGHT))
 	{
-		if (indexY < (kBgNumX - 1))
-		{
-			m_cursorNo++;
-		}
+		m_scrollX--;
 	}
+
 }
 
 
 
 void Map::draw()
 {
+	// m_scrollX > 0	右にずれている
+	// m_scrollX < 0	左にずれている
+	// m_scrollY > 0	下にずれている
+	// m_scrollY < 0	上にずれている
+
+	int indexX = 0;
+	int indexY = 0;
+
+	indexX = -( m_scrollX / kChipSize);
+	while (indexX < 0) indexX += kBgNumX;
+	
+	indexY = -(m_scrollY / kChipSize);
+	while (indexY < 0) indexY += kBgNumY;
+
+
 	for (int x = 0; x < kBgNumX; x++)
 	{
 		for (int y = 0; y < kBgNumY; y++)
