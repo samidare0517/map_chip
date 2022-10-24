@@ -1,8 +1,12 @@
 #include "map.h"
 #include "DxLib.h"
 #include "game.h"
-#include <assert.h>
 #include "Pad.h"
+
+#include <assert.h>
+#include <iostream>
+#include<fstream>
+
 namespace
 {
 	// マップチップ1つのサイズ
@@ -11,6 +15,9 @@ namespace
 	// チップの数
 	constexpr int kBgNumX = Game::kScreenWidth / kChipSize;
 	constexpr int kBgNumY = Game::kScreenHeight / kChipSize;
+
+	// 入出力ファイル名
+	const char* const kFileName = "map.bin";
 
 	// マップデータ
 	constexpr int kMapData[kBgNumY][kBgNumX] =
@@ -66,6 +73,28 @@ void Map::updata()
 	int indexX = m_cursorNo % kBgNumX;
 	int indexY = m_cursorNo / kBgNumX;
 
+	if (Pad::isTrigger(PAD_INPUT_1))
+	{
+		// 指定したマップチップの変更
+		if (m_mapData[m_cursorNo] < (chipNum() - 1))
+		{
+			m_mapData[m_cursorNo]++;
+		}
+	}
+	if (Pad::isTrigger(PAD_INPUT_2))
+	{
+		// 指定したマップチップの変更
+		if (m_mapData[m_cursorNo] > 0)
+		{
+			m_mapData[m_cursorNo]--;
+		}
+	}
+	if (Pad::isTrigger(PAD_INPUT_3))
+	{
+		// ファイルの出力
+		outputData();
+		readData();
+	}
 
 	if (Pad::isPress(PAD_INPUT_UP))
 	{
@@ -144,4 +173,32 @@ int Map::chipNumY()
 int Map::chipNum()
 {
 	return (chipNumX() * chipNumY());
+}
+
+void Map::outputData()
+{
+	std::ofstream ofs(kFileName, std::ios::binary);
+	// ファイルのオープンに失敗
+	if (!ofs)
+	{
+		return;
+	}
+
+	ofs.write(reinterpret_cast<char*>(m_mapData.data()), sizeof(int) * kBgNumX * kBgNumY);		// ポインタのキャスト　→　reinterpret_cast<char*>
+	ofs.close();
+}
+
+void Map::readData()
+{
+	std::ifstream ifs(kFileName, std::ios::binary);
+
+	// ファイルの読み込みに失敗
+	if (!ifs)
+	{
+		return;
+	}
+
+	ifs.read(reinterpret_cast<char*>(m_mapData.data()), sizeof(int) * kBgNumX * kBgNumY);
+
+	ifs.close();
 }
