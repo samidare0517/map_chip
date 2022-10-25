@@ -107,19 +107,38 @@ void Map::updata()
 
 	if (Pad::isPress(PAD_INPUT_UP))
 	{
-		m_scrollY++;
+		m_scrollY += 8;
+
+		if (m_scrollY > Game::kScreenHeight)
+		{
+			m_scrollY -= Game::kScreenHeight;
+		}
 	}
 	if (Pad::isPress(PAD_INPUT_DOWN))
 	{
-		m_scrollY--;
+		m_scrollY -= 8;
+
+		if (m_scrollY < -Game::kScreenHeight)
+		{
+			m_scrollY += Game::kScreenHeight;
+		}
 	}
 	if (Pad::isPress(PAD_INPUT_LEFT))
 	{
-		m_scrollX++;
+		m_scrollX += 8;
+
+		if (m_scrollX > Game::kScreenWidth)
+		{
+			m_scrollX -= Game::kScreenWidth;
+		}
 	}
 	if (Pad::isPress(PAD_INPUT_RIGHT))
 	{
-		m_scrollX--;
+		m_scrollX -= 8;
+		if (m_scrollX < -Game::kScreenWidth)
+		{
+			m_scrollX += Game::kScreenWidth;
+		}
 	}
 
 }
@@ -133,16 +152,24 @@ void Map::draw()
 	// m_scrollY > 0	‰º‚É‚¸‚ê‚Ä‚¢‚é
 	// m_scrollY < 0	ã‚É‚¸‚ê‚Ä‚¢‚é
 
-	int indexX = 0;
-	int indexY = 0;
+	int offsetX = m_scrollX;
+	if (offsetX > 0) offsetX -= Game::kScreenWidth;
 
-	indexX = -( m_scrollX / kChipSize);
-	while (indexX < 0) indexX += kBgNumX;
+	int offsetY = m_scrollY;
+	if (offsetY > 0) offsetY -= Game::kScreenHeight;
 	
-	indexY = -(m_scrollY / kChipSize);
-	while (indexY < 0) indexY += kBgNumY;
+	for (int x = 0; x < 2; x++)
+	{
+		for (int y = 0; y < 2; y++)
+		{
+			drawMap(offsetX + x * Game::kScreenWidth, offsetY + y * Game::kScreenHeight);
+		}
+	}
+	drawCursor();
+}
 
-
+void Map::drawMap(int offsetX, int offsetY)
+{
 	for (int x = 0; x < kBgNumX; x++)
 	{
 		for (int y = 0; y < kBgNumY; y++)
@@ -153,14 +180,14 @@ void Map::draw()
 			int graphX = (chipNo % chipNumX()) * kChipSize;
 			int graphY = (chipNo / chipNumX()) * kChipSize;
 
-			DrawRectGraph(x * kChipSize, y * kChipSize,
+			DrawRectGraph(x * kChipSize + offsetX, y * kChipSize + offsetY,
 				graphX, graphY, kChipSize, kChipSize,
 				m_handle, true, false);
 		}
 
 	}
-	drawCursor();
 }
+
 
 void Map::drawCursor()
 {
